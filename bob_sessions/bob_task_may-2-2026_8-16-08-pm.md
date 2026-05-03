@@ -2344,8 +2344,8 @@ Good! The process has been terminated. Now, to prevent this from happening again
 <file><path>.env</path>
 <content lines="1-8">
 1 | # IBM watsonx.ai Configuration
-2 | WATSONX_API_KEY=xR1A3lo1SL8CymL-AeA-_f3RhPboZBWdmusoa46GcOmi
-3 | WATSONX_PROJECT_ID=a2770951-a894-453e-9ea8-cffd728cdafa
+2 | WATSONX_API_KEY=api_key_removed
+3 | WATSONX_PROJECT_ID=project_id_removed
 4 | WATSONX_URL=https://us-south.ml.cloud.ibm.com
 5 | 
 6 | # Model Configuration
@@ -2389,8 +2389,8 @@ Perfect! Now let me temporarily disable the LLM features by commenting out the A
 <diff>
 <<<<<<< SEARCH
 # IBM watsonx.ai Configuration
-WATSONX_API_KEY=xR1A3lo1SL8CymL-AeA-_f3RhPboZBWdmusoa46GcOmi
-WATSONX_PROJECT_ID=a2770951-a894-453e-9ea8-cffd728cdafa
+WATSONX_API_KEY=api_key
+WATSONX_PROJECT_ID=project_id
 WATSONX_URL=https://us-south.ml.cloud.ibm.com
 
 # Model Configuration
