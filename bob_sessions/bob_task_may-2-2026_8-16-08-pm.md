@@ -2399,8 +2399,8 @@ LLM_PROVIDER=watsonx
 =======
 # IBM watsonx.ai Configuration
 # Temporarily disabled to avoid API timeout issues
-# WATSONX_API_KEY=xR1A3lo1SL8CymL-AeA-_f3RhPboZBWdmusoa46GcOmi
-# WATSONX_PROJECT_ID=a2770951-a894-453e-9ea8-cffd728cdafa
+# WATSONX_API_KEY=api_key
+# WATSONX_PROJECT_ID=project_id
 # WATSONX_URL=https://us-south.ml.cloud.ibm.com
 
 # Model Configuration
