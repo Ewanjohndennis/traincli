@@ -1924,8 +1924,8 @@ You have not created a todo list yet. Create one with `update_todo_list` if your
 <content lines="1-9">
 1 | #IBM watsonx.ai Configuration
 2 | #Temporarily disabled to avoid API timeout issues
-3 |  WATSONX_API_KEY=xR1A3lo1SL8CymL-AeA-_f3RhPboZBWdmusoa46GcOmi
-4 |  WATSONX_PROJECT_ID=a2770951-a894-453e-9ea8-cffd728cdafa
+3 |  WATSONX_API_KEY=api_key
+4 |  WATSONX_PROJECT_ID=project_id
 5 |  WATSONX_URL=https://us-south.ml.cloud.ibm.com
 6 | 
 7 | #Model Configuration
@@ -1992,8 +1992,8 @@ Let me fix both:
 -------
 #IBM watsonx.ai Configuration
 #Temporarily disabled to avoid API timeout issues
- WATSONX_API_KEY=xR1A3lo1SL8CymL-AeA-_f3RhPboZBWdmusoa46GcOmi
- WATSONX_PROJECT_ID=a2770951-a894-453e-9ea8-cffd728cdafa
+ WATSONX_API_KEY=api_key
+ WATSONX_PROJECT_ID=project_id
  WATSONX_URL=https://us-south.ml.cloud.ibm.com
 
 #Model Configuration
