@@ -1,6 +1,6 @@
 # TrainCLI
 
-#Created for IBM Dev Day: Bob Edition Hackathon
+# Created for IBM Dev Day: Bob Edition Hackathon
 **Train ML models from a single command — no code required.**
 
 TrainCLI is a command-line tool that automates the entire machine learning pipeline: data profiling, cleaning, model selection, training, and export. Perfect for rapid prototyping, baseline models, or learning ML workflows.
