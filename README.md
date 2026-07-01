@@ -1,20 +1,14 @@
 # TrainCLI
 
-# Created for IBM Dev Day: Bob Edition Hackathon
 **Train ML models from a single command — no code required.**
 
-TrainCLI is a command-line tool that automates the entire machine learning pipeline: data profiling, cleaning, model selection, training, and export. Perfect for rapid prototyping, baseline models, or learning ML workflows.
+TrainCLI automates the entire machine learning pipeline: data profiling, cleaning, model selection, training, and export. Go from a CSV to a production-ready model in one command.
 
-## Features
+```bash
+train --data sales.csv --target revenue
+```
 
-- 🚀 **One-command training** — `train --data data.csv --target column`
-- 🤖 **Auto model selection** — Cross-validation picks the best algorithm
-- 🧹 **Smart data cleaning** — Handles missing values, outliers, encoding
-- 📊 **Data profiling** — Detects issues before training
-- 🔍 **Leakage detection** — Warns about suspiciously correlated features
-- 🧠 **LLM-powered insights** — Optional AI explanations (watsonx.ai)
-- 📦 **Export everything** — model.pkl, train.py, report.md, metrics.json
-- 🔧 **Reproducible** — Generated train.py is standalone
+---
 
 ## Installation
 
@@ -22,183 +16,172 @@ TrainCLI is a command-line tool that automates the entire machine learning pipel
 pip install traincli
 ```
 
+**Requirements:** Python 3.9+, `pandas`, `scikit-learn`
+
+Extra dependencies (e.g. `xgboost`) are installed on demand when you first use a model that needs them.
+
+---
+
 ## Quick Start
 
-### 1. Initialize (first time only)
-
-```bash
-train init
-```
-
-This sets up your API keys for LLM features (optional — works offline too).
-
-### 2. Train a model
+### 1. Train a model
 
 ```bash
 train --data sales.csv --target revenue
 ```
 
-That's it! TrainCLI will:
-- Profile your data
-- Clean it automatically (or ask for input)
-- Detect if it's classification or regression
-- Try multiple models via cross-validation
-- Pick the best one
-- Export everything to `./output/`
+TrainCLI will profile your data, clean it automatically, detect whether it's a classification or regression problem, run cross-validation across multiple algorithms, pick the best one, and export everything to `./output/`.
 
-### 3. Use your model
+### 2. Use your model
 
 ```python
-import pickle
-import pandas as pd
+import pickle, pandas as pd
 
 with open("output/model.pkl", "rb") as f:
     model = pickle.load(f)
 
-new_data = pd.DataFrame([{"feature1": 10, "feature2": "A"}])
-prediction = model.predict(new_data)
+prediction = model.predict(pd.DataFrame([{"feature1": 10, "feature2": "A"}]))
 ```
 
-Or run the generated `train.py` to retrain from scratch.
+Or re-run the generated `train.py` to retrain from scratch at any time.
+
+---
+
+## Features
+
+**One-command training**
+No boilerplate. Point it at a CSV and a target column.
+
+**Automatic model selection**
+Cross-validation across a full candidate pool — classification and regression. A bundled meta-model narrows the search based on dataset characteristics before confirming via CV.
+
+**Smart data cleaning**
+Auto-handles ID columns, date parsing, currency strings, boolean encoding, and high-null columns. Prompts you only when a decision is genuinely ambiguous.
+
+**Leakage detection**
+Scans for features with >0.98 correlation to the target, name-based hints, and linear transformations. Flags them before training, not after.
+
+**Full reproducibility**
+Every training run exports a standalone `train.py` and a `session.json` audit trail. Re-run, share, or customize without touching TrainCLI again.
+
+
+
+---
+
+## Architecture
+
+```
+CSV Input
+   │
+   ▼
+Profiler ─────────────────────────────┐
+   │  (type detection, leakage scan)   │
+   ▼                                   │
+Cleaner                               LLM Insights
+   │  (auto-fix + interactive)         │  (optional)
+   ▼                                   │
+Detector ◄────────────────────────────┘
+   │  (classification vs regression)
+   ▼
+Trainer
+   │  (cross-validation, meta-model, selection)
+   ▼
+Exporter
+   │
+   ├── model.pkl
+   ├── train.py
+   ├── report.md
+   ├── metrics.json
+   └── session.json
+```
+
+**Module responsibilities:**
+
+| Module | Role |
+|--------|------|
+| `profiler.py` | Column type detection, data quality issues, leakage analysis |
+| `cleaner.py` | Auto-fixes and interactive prompts for ambiguous cases |
+| `detector.py` | Heuristic problem-type detection with LLM fallback |
+| `trainer.py` | Model selection, cross-validation, meta-model integration |
+| `exporter.py` | Output generation — pkl, scripts, reports, metadata |
+| `mcp_server.py` | MCP server exposing TrainCLI to Claude Desktop |
+| `core.py` | Shared pipeline logic used by both CLI and MCP |
+
+---
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `train --data <file> --target <col>` | Train a model on a CSV file |
+| `train --data <file> --target <col>` | Train a model on a CSV |
 | `train --dir <folder> --target <col>` | Train on all CSVs in a folder |
-| `train --model <name>` | Use a specific model (e.g., `random_forest`) |
-| `train --model ?` | Pick model interactively |
-| `train --task classification` | Override problem type detection |
-| `train --drop col1,col2` | Drop columns (e.g., to fix leakage) |
+| `train --model <name>` | Use a specific algorithm (e.g. `random_forest`) |
+| `train --model ?` | Pick a model interactively from a ranked table |
+| `train --task classification` | Override auto-detected problem type |
+| `train --drop col1,col2` | Drop columns before training (leakage fix) |
 | `train --preview` | Profile data without training |
-| `train --auto` | Skip all prompts (for CI/CD) |
-| `train init` | Configure API keys |
+| `train --auto` | Skip all prompts — useful in CI/CD |
 
-## Examples
 
-### Basic training
+**Examples:**
+
 ```bash
-train --data customers.csv --target churn
-```
-
-### Force a specific model
-```bash
+# Force a specific model
 train --data sales.csv --target price --model gradient_boosting
-```
 
-### Interactive model selection
-```bash
+# Interactive model picker
 train --data data.csv --target label --model ?
-```
 
-### Drop leaky columns
-```bash
+# Drop leaky columns
 train --data jobs.csv --target salary --drop min_salary,max_salary
-```
 
-### Batch processing
-```bash
+# Batch processing, no prompts
 train --dir ./datasets/ --target outcome --auto
-```
 
-### Preview mode
-```bash
+# Preview only
 train --data data.csv --target col --preview
 ```
 
-## Output Files
-
-After training, you'll get:
-
-- **model.pkl** — Trained scikit-learn pipeline (ready to use)
-- **train.py** — Standalone script to retrain the model
-- **report.md** — Human-readable summary with metrics
-- **metrics.json** — Machine-readable metrics
-- **session.json** — Full training session metadata
+---
 
 ## Supported Models
 
-TrainCLI includes:
+TrainCLI keeps the base install light — only `pandas` and `scikit-learn` are required. XGBoost is supported but not bundled; if cross-validation picks it as the best model for your data, TrainCLI will prompt you to install it before proceeding.
 
-**Classification:**
-- Logistic Regression
-- Random Forest
-- Gradient Boosting (XGBoost)
-- Support Vector Machine
-- K-Nearest Neighbors
+**Classification:** Logistic Regression, Random Forest, Gradient Boosting, SVM, K-Nearest Neighbors, XGBoost*
 
-**Regression:**
-- Linear Regression
-- Ridge Regression
-- Random Forest
-- Gradient Boosting (XGBoost)
-- Support Vector Regression
+**Regression:** Linear Regression, Ridge Regression, Random Forest, Gradient Boosting, Support Vector Regression, XGBoost*
 
-## LLM Features (Optional)
+*\* Requires `pip install xgboost`. TrainCLI will prompt you if it's needed.*
 
-TrainCLI can use IBM watsonx.ai to:
-- Explain model results in plain English
-- Suggest improvements
-- Generate educational comments in train.py
+---
 
-To enable:
-```bash
-train init
-# Choose "watsonx" and enter your API key
-```
+## Output Files
 
-Works offline if no API key is configured.
+| File | Contents |
+|------|----------|
+| `model.pkl` | Trained scikit-learn pipeline, ready to use |
+| `train.py` | Standalone retraining script with educational comments |
+| `report.md` | Human-readable summary — metrics, interpretation, decisions |
+| `metrics.json` | Machine-readable metrics for downstream tooling |
+| `session.json` | Full audit trail: every decision the pipeline made |
 
-## Data Leakage Detection
+---
 
-TrainCLI automatically checks for:
-- Features with >0.98 correlation to target
-- Column names containing the target name
-- Linear transformations of the target
 
-Example warning:
-```
-⚠ Leakage suspected:
-  → min_salary: correlation with target is 0.999 — suspiciously high
-  
-  Suggested fix: train --drop min_salary ...
-```
 
-## Requirements
+## MCP Server (Claude Desktop Integration)
 
-- Python 3.9+
-- pandas, scikit-learn, xgboost
-- Optional: ibm-watsonx-ai (for LLM features)
+TrainCLI ships with an MCP server so Claude Desktop can train models directly.
 
-## Development
+**Setup:**
 
-```bash
-git clone https://github.com/yourusername/traincli
-cd traincli
-pip install -e .
-```
-
-## License
-
-MIT
-
-## Contributing
-
-Contributions welcome! Open an issue or PR.
-
-## MCP Server (Claude Code Integration)
-
-TrainCLI includes an MCP server that lets Claude Code train models directly:
-
-### Setup
-
-1. Install TrainCLI:
 ```bash
 pip install traincli
 ```
 
-2. Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on Mac):
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+
 ```json
 {
   "mcpServers": {
@@ -209,32 +192,49 @@ pip install traincli
 }
 ```
 
-3. Restart Claude Desktop
+Restart Claude Desktop.
 
-### Available Tools
+**Available tools:**
 
-- **train_model** — Train a model on a CSV file
-- **profile_dataset** — Profile data without training
-- **suggest_target** — Suggest the best target column
+| Tool | Description |
+|------|-------------|
+| `train_model` | Run the full pipeline on a CSV |
+| `profile_dataset` | Analyze data without training |
+| `suggest_target` | Recommend the best target column |
 
-### Example Usage in Claude
+**Example:**
 
 ```
 User: Train a model on sales.csv to predict revenue
 
-Claude: [calls train_model tool]
+Claude: [calls train_model]
 ✓ Model trained: Gradient Boosting
 ✓ R² = 0.847
 ✓ Files saved to ./output/
 ```
 
-## Roadmap
+---
 
-- [ ] Meta-model for smarter algorithm selection
-- [ ] More preprocessing options
-- [ ] Feature engineering suggestions
-- [ ] Hyperparameter tuning
+## Development
+
+```bash
+git clone https://github.com/yourusername/traincli
+cd traincli
+pip install -e .
+```
 
 ---
 
-**Made with ❤️ for developers who want ML without the boilerplate.**
+
+
+## License
+
+MIT
+
+## Contributing
+
+Open an issue or PR — contributions welcome.
+
+---
+
+*Built for the IBM Dev Day: Bob Edition Hackathon.*
